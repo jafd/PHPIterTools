@@ -2,8 +2,6 @@
 
 require_once(implode(DIRECTORY_SEPARATOR, array(dirname(__FILE__), "..", "src", "IterTools.php")));
 
-use IterTools\map as map;
-
 class IterToolsTest extends PHPUnit_Framework_TestCase {
     public function testMapTypeChecks() {
         try {
@@ -161,4 +159,21 @@ class IterToolsTest extends PHPUnit_Framework_TestCase {
         $this->assertEquals(array('1', '2', '3', '4', 'a', 'c', 'i', 'd', 'foo', 'bar'), $result);
     }
 
+    public function testFlip() {
+        $a = array('key1' => 'value1', 'key2' => 'value2');
+        $i = IterTools\flip($a)->toArray();
+        $this->assertEquals(array('value1' => 'key1', 'value2' => 'key2'), $i);
+    }
+
+    public function testKeys() {
+        $a = array('key1' => 'value1', 'key2' => 'value2');
+        $i = IterTools\keys($a)->toArray();
+        $this->assertEquals(array_keys($a), $i);
+    }
+
+    public function testValues() {
+        $a = array('key1' => 'value1', 'key2' => 'value2');
+        $i = IterTools\values($a)->toArray();
+        $this->assertEquals(array_values($a), $i);
+    }
 }

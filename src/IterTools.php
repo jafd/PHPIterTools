@@ -5,7 +5,7 @@ namespace IterTools;
 class IterWrapper implements \Iterator {
     protected $inner;
     protected $callable;
-    public function __construct($callable, $input) {
+    public function __construct($input) {
         if (!is_array($input) && !($input instanceof \Traversable)) {
             throw new \InvalidArgumentException("IterWrapper needs its argument to be traversable (array or implement Traversable).");
         }
@@ -13,10 +13,6 @@ class IterWrapper implements \Iterator {
             $input = new \ArrayIterator($input);
         }
         $this->inner = $input;
-        if (!is_callable($callable)) {
-            throw new \InvalidArgumentException("IterWrapper needs the first argument to be a callable.");
-        }
-        $this->callable = $callable;
     }
 
     public function next() {
@@ -53,13 +49,20 @@ class IterWrapper implements \Iterator {
 }
 
 class MapIterator extends IterWrapper {
+    public function __construct($callable, $input) {
+        parent::__construct($input);
+        if (!is_callable($callable)) {
+            throw new \InvalidArgumentException("IterWrapper needs the first argument to be a callable.");
+        }
+        $this->callable = $callable;
+    }
     public function current() {
         $m = $this->callable;
         return $m(parent::current());
     }
 }
 
-class MapXYIterator extends IterWrapper {
+class MapXYIterator extends MapIterator {
     public function current() {
         $m = $this->callable;
         return $m($this->key(), parent::current());
@@ -80,14 +83,61 @@ class MergeIterator extends IterWrapper {
     }
 }
 
-class FilterIterator extends IterWrapper {
+class FlipIterator extends IterWrapper {
+    public function current() {
+        return parent::key();
+    }
+    public function key() {
+        return parent::current();
+    }
+}
+
+class FilterIterator extends MapIterator {
     public function current() {
         $m = $this->callable;
-        while (($c = parent::current()) && $this->valid()) {
+        while (($c = IterWrapper::current()) && $this->valid()) {
             if ($m($c))
                 return $c;
             $this->next();
         }
+    }
+}
+
+class KeyIterator extends IterWrapper {
+    private $position = 0;
+    public function rewind() {
+        $this->position = 0;
+        return parent::rewind();
+    }
+
+    public function next() {
+        $this->position++;
+        return parent::next();
+    }
+
+    public function key() {
+        return $this->position;
+    }
+
+    public function current() {
+        return $this->inner->key();
+    }
+}
+
+class ValueIterator extends IterWrapper {
+    private $position = 0;
+    public function rewind() {
+        $this->position = 0;
+        return parent::rewind();
+    }
+
+    public function next() {
+        $this->position++;
+        return parent::next();
+    }
+
+    public function key() {
+        return $this->position;
     }
 }
 
@@ -164,5 +214,17 @@ function merge() {
        }
        $result->append($x);
     }
-    return new MergeIterator(function ($x) {return $x;}, $result);
+    return new MergeIterator($result);
+}
+
+function flip($argument) {
+    return new FlipIterator($argument);
+}
+
+function keys($argument) {
+    return new KeyIterator($argument);
+}
+
+function values($argument) {
+    return new ValueIterator($argument);
 }
