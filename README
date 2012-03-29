@@ -1,0 +1,82 @@
+PHPIteratorTools
+================
+
+These are some useful iterator tools for PHP. As the author was growing
+increasingly frustrated over the PHP developers disinclined to make array_*
+functions work properly with ArrayObjects and Traversables, excusing
+themselves with backwards compatibility, he ditched it altogether and wrote
+some functions to scratch his own little itches.
+
+While on that way, he also made the functions consistent - like, callable is
+always first, then goes input, then goes everything else, which is an
+advantage over PHP's default "do it the way you feel like today" way.
+
+Here they go.
+
+IterTools is the namespace you import, so that those little guys with pretty
+generic names don't spoil your own namespace.
+
+map($callable, $input)
+----------------------
+
+Given a function name or a closure as $callable and an array or Traversable as
+$input, returns an iterator which, whenever its next value is queried, applies
+$callable to the next value from $input and returns the result.
+
+The returned Iterator can only be iterated over. It has an additional method,
+getArray(), which iterates over the whole thing and returns the result as
+array if that's what you ultimately want (which might be often as case).
+
+You don't need the result as array if what you want after that is a foreach()
+loop.
+
+Note also, that keys are fully preserved.
+
+mapxy($callable, $input)
+------------------------
+
+Does the same thing as map(), the difference being that  $callable is assumed
+to take two arguments instead of one. The first will be the key, and the
+second the value. It is also expected that a single value will be returned,
+though.
+
+The keys, too, are preserved.
+
+filter($callable, $input)
+-------------------------
+
+Returns an iterator which skips those values in $input for which $callable
+would return false.
+
+The keys of $input are kept, even for numeric-indexed-only arrays.
+
+reduce($callable, $input, $maybe_initial = null)
+------------------------------------------------
+
+Given a callable that accepts two arguments, an iterator/list as input, and an
+initial value to start with, iterates over $input, applying $callable to it
+and the result of the previous call, returning the ultimate result.
+
+Be careful when feeding infinite iterators to it. That is, don't do that.
+
+merge($input1, $input2, $input3, ...)
+-------------------------------------
+
+Returns an iterator which chains inputs together. Please note that the
+toArray() method of the resulting iterator will behave much like array_merge
+function - that is, duplicate numeric keys are renumbered, non-numeric keys
+are overwritten. Iterating with foreach() will give quite different result,
+which will preserve all the values but duplicate keys may occur.
+
+keys($input)
+------------
+
+Returns an iterator over the keys of $input.
+
+values($input)
+--------------
+
+Returns an iterator over the values of $input. Keys are numeric and are not
+preserved at all (this being the point of it, for example,
+values(merge($input1, $input2, ...))->toArray() will have all entries
+renumbered and none of them overwritten).

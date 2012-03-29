@@ -2,6 +2,9 @@
 
 namespace IterTools;
 
+/**
+ * The iterator wrapper used by all the above functions.
+ */
 class IterWrapper implements \Iterator {
     protected $inner;
     protected $callable;
@@ -48,6 +51,9 @@ class IterWrapper implements \Iterator {
     }
 }
 
+/**
+ * The iterator returned by the map() function.
+ */
 class MapIterator extends IterWrapper {
     public function __construct($callable, $input) {
         parent::__construct($input);
@@ -62,6 +68,9 @@ class MapIterator extends IterWrapper {
     }
 }
 
+/**
+ * The iterator returned by the mapxy() function.
+ */
 class MapXYIterator extends MapIterator {
     public function current() {
         $m = $this->callable;
@@ -69,6 +78,9 @@ class MapXYIterator extends MapIterator {
     }
 }
 
+/**
+ * The iterator returned by the merge() function.
+ */
 class MergeIterator extends IterWrapper {
     public function toArray() {
         $result = array();
@@ -83,6 +95,9 @@ class MergeIterator extends IterWrapper {
     }
 }
 
+/**
+ * The iterator returned by the flip() function.
+ */
 class FlipIterator extends IterWrapper {
     public function current() {
         return parent::key();
@@ -92,6 +107,9 @@ class FlipIterator extends IterWrapper {
     }
 }
 
+/**
+ * The iterator returned by the filter() function.
+ */
 class FilterIterator extends MapIterator {
     public function current() {
         $m = $this->callable;
@@ -103,6 +121,9 @@ class FilterIterator extends MapIterator {
     }
 }
 
+/**
+ * The iterator returned by the keys() function.
+ */
 class KeyIterator extends IterWrapper {
     private $position = 0;
     public function rewind() {
@@ -124,6 +145,9 @@ class KeyIterator extends IterWrapper {
     }
 }
 
+/**
+ * The iterator returned by the vallues() function.
+ */
 class ValueIterator extends IterWrapper {
     private $position = 0;
     public function rewind() {
@@ -144,14 +168,16 @@ class ValueIterator extends IterWrapper {
 
 /**
  * Given an array or a Traversable, returns an Iterator
- * which applies $callable to each element of $input and
+ * which applies $callable to each value of $input and
  * returns the result.
  *
+ * The $callable is expected to accept a single argument.
+ * 
  * If any of parameter is of wrong type, InvalidArgumentException is thrown.
  *
  * @param callable $callable
  * @param array|Traversable $input
- * @return IterWrapper
+ * @return MapIterator
  * @throws InvalidArgumentException
  *
  */
@@ -165,6 +191,22 @@ function map ($callable, $input) {
     return new MapIterator($callable, $input);
 }
 
+/**
+ * Given an array or a Traversable, returns an Iterator
+ * which applies $callable to each key/value pair of $input and
+ * returns the result.
+ *
+ * The $callable is expected to accept two arguments, the first a key and
+ * the second a value.
+ * 
+ * If any of parameter is of wrong type, InvalidArgumentException is thrown.
+ *
+ * @param callable $callable
+ * @param array|Traversable $input
+ * @return MapXYIterator
+ * @throws InvalidArgumentException
+ *
+ */
 function mapxy ($callable, $input) {
     if (!is_callable($callable)) {
         throw new \InvalidArgumentException("map needs the first argument to be a callable.");
@@ -175,6 +217,20 @@ function mapxy ($callable, $input) {
     return new MapXYIterator($callable, $input);
 }
 
+/**
+ * Given an array or a Traversable, returns an Iterator
+ * which applies $callable to each value of $input and
+ * returns only those values for which the $callable returns true.
+ *
+ * The $callable is expected to accept a single argument.
+ * 
+ * If any of parameter is of wrong type, InvalidArgumentException is thrown.
+ *
+ * @param callable $callable
+ * @param array|Traversable $input
+ * @return IterTools\FilterIterator
+ * @throws InvalidArgumentException
+ */
 function filter ($callable, $input) {
     if (!is_callable($callable)) {
         throw new \InvalidArgumentException("filter needs the first argument to be a callable.");
@@ -185,6 +241,25 @@ function filter ($callable, $input) {
     return new FilterIterator($callable, $input);
 }
 
+/**
+ * Given an array or a Traversable and an optional initial value,
+ * iterates over $input, applying $callable to the previous iteration
+ * result and the current value, returning the last result.
+ *
+ * The $callable is expected to accept two arguments.
+ * 
+ * If any of parameter is of wrong type, InvalidArgumentException is thrown.
+ *
+ * Do not apply this function to iterators which never finish, 
+ * it will do you no good.
+ *
+ * @param callable $callable
+ * @param array|Traversable $input
+ * @param mixed $initial
+ * @return mixed
+ * @throws InvalidArgumentException
+ *
+ */
 function reduce($callable, $input, $initial = null) {
     if (!is_callable($callable)) {
         throw new \InvalidArgumentException("reduce needs the first argument to be a callable.");
@@ -200,6 +275,15 @@ function reduce($callable, $input, $initial = null) {
     return $result;
 }
 
+/**
+ * Given an arbitrary number of Traversable/arrays as input, returns an Iterator
+ * which iterates them one after another.
+ * 
+ * The toArray() method of this Iterator behaves in the way array_merge() function
+ * does, renumbering the numeric keys and overwriting the non-numeric ones.
+ * 
+ * @return MergeIterator
+ */
 function merge() {
     $arguments = func_get_args();
     foreach($arguments as $input) {
