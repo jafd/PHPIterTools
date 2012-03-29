@@ -16,6 +16,9 @@ Here they go.
 IterTools is the namespace you import, so that those little guys with pretty
 generic names don't spoil your own namespace.
 
+IMPORTANT NOTE: please be kind to give me a shout if you use this code in your
+project, so I know somebody cares.
+
 map($callable, $input)
 ----------------------
 
@@ -80,3 +83,4 @@ Returns an iterator over the values of $input. Keys are numeric and are not
 preserved at all (this being the point of it, for example,
 values(merge($input1, $input2, ...))->toArray() will have all entries
 renumbered and none of them overwritten).
+
