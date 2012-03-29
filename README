@@ -1,5 +1,5 @@
-PHPIteratorTools
-================
+PHP Iterator Tools
+==================
 
 These are some useful iterator tools for PHP. As the author was growing
 increasingly frustrated over the PHP developers disinclined to make array_*
